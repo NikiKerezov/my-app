@@ -11,7 +11,7 @@ function MyNavbar() {
   const [{ wallet }] = useConnectWallet();
   const [accountAddress, setAccountAddress] = useState<string>("");
   const [accountBalance, setAccountBalance] = useState<string>("");
-
+  /*
   useEffect(() => {
     console.log(wallet?.accounts);
     if (accountAddress) {
@@ -28,6 +28,7 @@ function MyNavbar() {
       }
     }
   }, [accountAddress, wallet?.accounts, wallet?.chains]);
+  */
 
   useEffect(() => {
     if (wallet?.accounts.length) {
@@ -44,18 +45,21 @@ function MyNavbar() {
   };
 
   return (
-    <Navbar className="bg-body-tertiary">
-      <Container>
-        <Navbar.Brand href="#home">
+    <Navbar className="bg-dark text-light">
+      <Container className="bg-dark text-light">
+        <Navbar.Brand href="#home" className="bg-dark text-light">
           Connect to your MetaMask account!
         </Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
           <Stack direction="horizontal" gap={2}>
+            {/*
             <Badge bg="secondary">
               Chain: {getChainName(wallet?.chains[0]?.id)}
             </Badge>
             <Badge bg="secondary">Balance: {accountBalance}</Badge>
+  */}
+
             <ConnectButton />
           </Stack>
         </Navbar.Collapse>

@@ -5,6 +5,8 @@ import MyNavbar from "./components/Navbar";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import ChainSwitcher from "./components/ChainSwitcher";
+import "./App.css";
 
 const ethereumSepolia = {
   id: "0xAA36A7",
@@ -13,8 +15,16 @@ const ethereumSepolia = {
   rpcUrl: `https://eth-sepolia.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_KEY}`,
 };
 
+const polygonMumbai = {
+  id: "0x13881",
+  token: "MATIC",
+  label: "Polygon Mumbai Testnet",
+  rpcUrl: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.REACT_APP_ALCHEMY_KEY}`,
+};
+
 export const chains = [
   ethereumSepolia,
+  polygonMumbai,
   {
     id: "0x1",
     token: "ETH",
@@ -200,31 +210,31 @@ function App() {
   console.log(web3Onboard);
   return (
     <Web3OnboardProvider web3Onboard={web3Onboard}>
-      <header>
-        <h1>
-          <div className="container">
-            <div className="row">
-              <div className="col-3"></div>
-              <div className="col">Exchange your tokens here!</div>
-              <div className="col-3"></div>
-            </div>
-          </div>
-        </h1>
-        <body>
-          <div className="container">
-            <div className="row">
-              <div className="col">
-                <MyNavbar />
+      <div className="dark-background fullscreen">
+        <header className="dark-background">
+          <h1>
+            <Container className="bg-dark text-light">
+              <Row className="bg-dark text-light">
+                <div className="col-3"></div>
+                <div className="col">Exchange your tokens here!</div>
+                <div className="col-3"></div>
+              </Row>
+            </Container>
+          </h1>
+          <body className="dark-background">
+            <Container className="bg-dark text-light">
+              <Row className="bg-dark text-light">
+                <div className="col">
+                  <MyNavbar />
+                </div>
+              </Row>
+              <div className="row justify-content-center m-5">
+                {<ChainSwitcher></ChainSwitcher>}
               </div>
-            </div>
-            <div className="row justify-content-center m-5">
-              {
-                // <MyTokenCard />
-              }
-            </div>
-          </div>
-        </body>
-      </header>
+            </Container>
+          </body>
+        </header>
+      </div>
     </Web3OnboardProvider>
   );
 }
