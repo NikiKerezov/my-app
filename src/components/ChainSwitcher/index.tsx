@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Button, Card, Container, Form } from "react-bootstrap";
+import { Button, Card, Container, Form, Row } from "react-bootstrap";
 import { useConnectWallet } from "@web3-onboard/react";
 import { Modal } from "react-bootstrap";
 import setChain from "@web3-onboard/core/dist/chain";
 import { web3Onboard } from "../../App";
+import ExchangeButton from "../ExchangeButton";
 
 interface ChainAssets {
   [key: string]: string[];
@@ -14,6 +15,8 @@ function ChainSwitcher() {
   const [receiveChain, setReceiveChain] = useState("");
   const [sendAsset, setSendAsset] = useState("");
   const [receiveAsset, setReceiveAsset] = useState("");
+  const [sendAmount, setSendAmount] = useState<number>(0);
+  const [receiveAmount, setReceiveAmount] = useState<number>(0);
   const [{ wallet }] = useConnectWallet();
   const [showSepoliaModal, setShowSepoliaModal] = useState(false);
   const [showMumbaiModal, setShowMumbaiModal] = useState(false);
@@ -31,10 +34,6 @@ function ChainSwitcher() {
 
   useEffect(() => {
     if (wallet) {
-      console.log("CHAIN");
-      console.log(wallet.chains[0].id);
-      console.log("SEND CHAIN");
-      console.log(sendChain);
       if (sendChain === "Sepolia" && wallet.chains[0].id !== "0xaa36a7") {
         setShowSepoliaModal(true);
       } else {
@@ -103,6 +102,20 @@ function ChainSwitcher() {
     setReceiveAsset(e.target.value);
   };
 
+  const handleSendAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const amount = parseFloat(e.target.value);
+    setSendAmount(amount);
+  };
+
+  const calculateReceiveAmount = () => {
+    // Add your calculation logic here based on the sendAmount and exchange rate
+    // Set the calculated receiveAmount using setReceiveAmount
+    // For example:
+    const exchangeRate = 2529.243; // Example exchange rate
+    const calculatedAmount = sendAmount * exchangeRate;
+    setReceiveAmount(calculatedAmount);
+  };
+
   const handleSwitchNetworks = () => {
     const tempSendChain = sendChain;
     const tempReceiveChain = receiveChain;
@@ -116,12 +129,16 @@ function ChainSwitcher() {
   };
 
   const chainAssets: ChainAssets = {
-    Sepolia: ["Asset 1", "Asset 2", "Asset 3"],
-    Mumbai: ["Asset A", "Asset B", "Asset C"],
+    Sepolia: ["sETH"],
+    Mumbai: ["MATIC"],
   };
 
   const sendAssets: string[] = chainAssets[sendChain] || [];
   const receiveAssets: string[] = chainAssets[receiveChain] || [];
+
+  useEffect(() => {
+    calculateReceiveAmount();
+  }, [sendAmount]);
 
   if (!wallet?.accounts.length) {
     // Render null or alternative UI when wallet is not connected
@@ -198,11 +215,41 @@ function ChainSwitcher() {
             </Form.Select>
           </Form.Group>
 
-          <Button variant="primary" onClick={handleSwitchNetworks}>
-            Switch Networks
-          </Button>
+          <Form.Group className="bg-dark text-light">
+            <Form.Label className="bg-dark text-light">
+              Number of tokens to send:
+            </Form.Label>
+            <Form.Control
+              type="number"
+              value={sendAmount}
+              onChange={handleSendAmountChange}
+              className="bg-dark text-light"
+            />
+          </Form.Group>
+
+          <Form.Group className="bg-dark text-light">
+            <Form.Label className="bg-dark text-light">
+              Calculated receiving amount:
+            </Form.Label>
+            <Form.Control
+              type="number"
+              value={receiveAmount}
+              readOnly
+              className="bg-dark text-light"
+            />
+          </Form.Group>
+          <Container className="bg-dark text-light">
+            <Row className="bg-dark text-light justify-content-center m-5">
+              <Button variant="primary" onClick={handleSwitchNetworks}>
+                Switch Networks
+              </Button>
+              <Row className="bg-dark text-light justify-content-center m-1">
+                <ExchangeButton />
+              </Row>
+            </Row>
+          </Container>
         </Card.Body>
-        <Card.Footer className="bg-dark text-light">
+        <Card.Footer className="bg-dark text-light justify-content-center m-5">
           <Modal show={showSepoliaModal} onHide={handleSepoliaModalClose}>
             <Modal.Header closeButton>
               <Modal.Title>Network Switch Required</Modal.Title>
