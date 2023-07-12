@@ -8,7 +8,6 @@ import ExchangeButton from "../ExchangeButton";
 import { ethers } from "ethers";
 import { CHAINLINK_TOKEN_ADDRESS } from "../../AddressesAndAbis/chainlink_token_address";
 import { ERC20_ABI } from "../../AddressesAndAbis/erc20_abi";
-import { BRIDGE_ADDRESS } from "../../AddressesAndAbis/bridge_address";
 import { sign } from "crypto";
 import { BRIDGE_ABI } from "../../AddressesAndAbis/bridge_abi";
 import { IoSwapVerticalOutline } from "react-icons/io5";
@@ -30,6 +29,7 @@ function ChainSwitcher() {
   const [tokenAllowance, setTokenAllowance] = useState<ethers.BigNumber>();
   const [showBridgeButton, setShowBridgeButton] = useState(false);
   const [showSwitchButton, setShowSwitchButton] = useState(false);
+  const [bridgeAddress, setBridgeAddress] = useState("");
 
   type SetChain = (options: SetChainOptions) => Promise<boolean>;
 
@@ -94,6 +94,13 @@ function ChainSwitcher() {
         setShowSwitchButton(false);
       }
 
+      if (sendChain === "Sepolia")
+        setBridgeAddress("0x4b960477ec52ea813d8a4d48f787b2960b51f613");
+      else if (sendChain === "Mumbai")
+        setBridgeAddress("0x747bbdf33146e3b080f9cfbe474996bf2046c0f7");
+
+      console.log("bridgeAddress", bridgeAddress);
+
       calculateReceiveAmount();
     }
   }, [wallet, sendChain, calculateReceiveAmount]);
@@ -105,7 +112,7 @@ function ChainSwitcher() {
 
       const tx = {
         from: wallet.accounts[0].address,
-        to: BRIDGE_ADDRESS,
+        to: bridgeAddress,
         value: ethers.utils.parseEther(sendAmount.toString()),
         nonce: await provider.getTransactionCount(wallet.accounts[0].address),
         gasLimit: ethers.utils.hexlify(gas_limit),
@@ -137,16 +144,26 @@ function ChainSwitcher() {
         signer
       );
 
+      console.log("TOKEN CONTRACT: ", tokenContract);
+
       if (!tokenContract) return;
 
+      console.log(tokenAllowance);
+
+      if (tokenAllowance)
+        setTokenAllowance(
+          ethers.utils.parseUnits(tokenAllowance.toString(), tokenDecimals)
+        );
+
       // Check token allowance
-      if (
-        tokenAllowance &&
-        tokenAllowance.lt(sendAmount * 10 ** tokenDecimals)
-      ) {
+      if (!tokenAllowance || tokenAllowance.gt(sendAmount)) {
+        console.log("here");
+        console.log("here");
+        console.log("here");
+        console.log("here");
         try {
           tokenContract
-            .allowance(wallet.accounts[0].address, BRIDGE_ADDRESS)
+            .allowance(wallet.accounts[0].address, bridgeAddress)
             .then((allowance: ethers.BigNumber) => {
               console.log("ALLOWANCE: ", allowance.toString());
               setTokenAllowance(allowance);
@@ -155,7 +172,7 @@ function ChainSwitcher() {
               console.log("Error fetching token allowance:", error);
             });
 
-          const spenderAddress = BRIDGE_ADDRESS;
+          const spenderAddress = bridgeAddress;
 
           const approveTx = await tokenContract.approve(
             spenderAddress,
@@ -183,14 +200,14 @@ function ChainSwitcher() {
         let targetChain = receiveChain === "Sepolia" ? 0xaa36a7 : 0x13881;
 
         const data = contract.interface.encodeFunctionData("lock", [
-          1,
+          2,
           amount,
           targetChain,
         ]);
 
         const tx = {
           from: wallet.accounts[0].address,
-          to: BRIDGE_ADDRESS,
+          to: bridgeAddress,
           value: ethers.utils.parseUnits("0.000", "ether"),
           data: data,
         };
